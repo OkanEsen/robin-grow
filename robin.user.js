@@ -366,58 +366,60 @@
     var spamCounts = {};
 
     function findAndHideSpam() {
-        var $messages = $(".robin-message");
+        var messagesList = document.getElementsByClassName("robin-message");
 
         var maxprune = parseInt(settings.maxprune || "1000", 10);
         if (maxprune < 10 || isNaN(maxprune)) {
             maxprune = 1000;
         }
 
-        if ($messages.length > maxprune) {
-            $messages.slice(0, $messages.length - maxprune).remove();
+        if (messagesList.length > maxprune) {
+            var tempMessage = Array.prototype.slice.call(messagesList, 0, messagesList.length - maxprune);
+            for (var i = 0, len_t = tempMessage.length; i < len_t; ++i)
+                tempMessage[i].parentNode.removeChild(tempMessage[i]);
         }
 
         if (settings.findAndHideSpam) {
             // skips over ones that have been hidden during this run of the loop
-            $('.robin--user-class--user .robin-message--message:not(.addon--hide)').each(function() {
-                var $this = $(this);
-
-                var hash = murmurhash2_32_gc($this.text());
-                var user = $('.robin-message--from', $this.closest('.robin-message')).text();
-
+            var messageTemp;
+            var hash;
+            var user;
+            var messageList = document.querySelectorAll(".robin--user-class--user .robin-message--message");
+            for (var j = 0, len = messageList.length; j < len; ++j) {
+                messageTemp = messageList[j];
+                hash = murmurhash2_32_gc(messageTemp.textContent);
+                user = messageTemp.parentNode.querySelector(".robin--username").textContent;
 
                 spamCounts[user] = spamCounts[user] || {};
 
                 if (spamCounts[user][hash]) {
                     spamCounts[user][hash].count++;
-                    spamCounts[user][hash].elements.push(this);
+                    spamCounts[user][hash].elements.push(messageTemp);
                 } else {
                     spamCounts[user][hash] = {
                         count: 1,
-                        text: $this.text(),
-                        elements: [this]
+                        text: messageTemp.textContent,
+                        elements: [messageTemp]
                     };
                 }
-                $this = null;
-            });
+            }
 
 
-            // This should be faster than the method of $.each
+            // TODO: replace this nested loop causing huge unnessecary performance spikes
             var messages = null;
             var message = null;
             var element = null;
-            for (var i = 0, keys_i = Object.keys(spamCounts), li = keys_i.length; i < li; ++i) {
-                messages = spamCounts[keys_i[i]];
+            for (var k = 0, keys_k = Object.keys(spamCounts), lk = keys_k.length; k < lk; ++k) {
+                messages = spamCounts[keys_k[k]];
                 //console.log("M -> " + messages);
-                for (var j = 0, keys_j = Object.keys(messages), lj = keys_j.length; j < lj; ++j) {
-                    message = messages[keys_j[j]];
+                for (var l = 0, keys_l = Object.keys(messages), ll = keys_l.length; l < ll; ++l) {
+                    message = messages[keys_l[l]];
                     //console.log("m -> " + message);
 
                     if (message.count >= 3) {
-                        for (var k = 0, keys_k = Object.keys(message.elements), lk = keys_k.length; k < lk; ++k) {
-                            element = message.elements[keys_k[k]];
-                            //console.log("SPAM REMOVE: "+$(element).closest('.robin-message').text());
-                            $(element).closest('.robin-message').addClass('addon--hide').remove();
+                        for (var m = 0, keys_m = Object.keys(message.elements), lm = keys_m.length; m < lm; ++m) {
+                           element = message.elements[keys_m[m]];
+                           element.parentNode.removeChild(element);
                         }
                     } else {
                         message.count = 0;
@@ -435,11 +437,9 @@
     function isBotSpam(text) {
         // starts with a [, has "Autovoter", or is a vote
         var filter =
-            text.indexOf("[") === 0 ||
-            text === "voted to STAY" ||
-            text === "voted to GROW" ||
-            text === "voted to ABANDON" ||
-            text.indexOf("Autovoter") > -1 ||
+            ~text.trim().indexOf("[") === -1 ||
+            text.trim().toLowerCase().indexOf("voted to") !== -1 ||
+            text.trim().toLowerCase().indexOf("autovoter") !== -1 ||
             (UNICODE_SPAM_RE.test(text));
 
         var spamFilters = settings.spamFilters.split(",").map(function(filter) { return filter.trim().toLowerCase(); });
@@ -479,9 +479,7 @@
 
         $("#settingContent").append("<div id='blockedUserList' class='robin-chat--sidebar-widget robin-chat--user-list-widget'></div>");
 
-        var i;
-        var len;
-        for (i = 0, len = mutedList.length; i < len; i++) {
+        for (var i = 0, len = mutedList.length; i < len; i++) {
             var mutedHere = "present";
 
             var userInArray = $.grep(list, function(e) {
