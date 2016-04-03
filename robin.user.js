@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Robin Grow
 // @namespace    http://tampermonkey.net/
-// @version      1.850
+// @version      1.860
 // @description  Try to take over the world!
 // @author       /u/mvartan
 // @include      https://www.reddit.com/robin*
@@ -151,8 +151,9 @@
 
     // Options begin
     Settings.addBool("removeSpam", "Remove bot spam", true);
-    Settings.addBool("findAndHideSpam", "Removes messages that have been sent more than 3 times", true);
+    Settings.addBool("findAndHideSpam", "Remove messages that have been sent more than 3 times", true);
     Settings.addInput("maxprune", "Max messages before pruning", "500");
+    Settings.addInput("spamFilters", "Custom spam filters, comma delimited.", "spam example 1, spam example 2");
     Settings.addInput("channel", "Channel filter", "");
     Settings.addBool("filterChannel", "Filter by channel", false);
     // Options end
@@ -441,8 +442,12 @@
             text.indexOf("Autovoter") > -1 ||
             (UNICODE_SPAM_RE.test(text));
 
-            // if(filter)console.log("removing "+text);
-            return filter;
+        var spamFilters = settings.spamFilters.split(",").map(function(filter) { return filter.trim().toLowerCase(); });
+        spamFilters.forEach(function(filterVal) {
+            filter = filter || filterVal.length > 0 && text.toLowerCase().indexOf(filterVal) >= 0;
+        });
+
+        return filter;
     }
 
     // Individual mute button /u/verox-
@@ -455,12 +460,45 @@
             // Mute our user.
             mutedList.push(username);
             this.style.textDecoration = "line-through";
+            listMutedUsers();
         } else {
             // Unmute our user.
             this.style.textDecoration = "none";
             mutedList.splice(clickedUser, 1);
+            listMutedUsers();
         }
     });
+
+    $("#settingContent").append("<span style='font-size:12px;text-align:center;'>Muted Users</label>");
+
+    $("#settingContent").append("<div id='blockedUserList' class='robin-chat--sidebar-widget robin-chat--user-list-widget'></div>");
+
+    function listMutedUsers() {
+
+        $("#blockedUserList").remove();
+
+        $("#settingContent").append("<div id='blockedUserList' class='robin-chat--sidebar-widget robin-chat--user-list-widget'></div>");
+
+        $.each(mutedList, function(index, value){
+
+            var mutedHere = "present";
+
+            var userInArray = $.grep(list, function(e) {
+                return e.name === value;
+            });
+
+            if (userInArray[0].present === true) {
+                mutedHere = "present";
+            } else {
+                mutedHere = "away";
+            }
+
+            $("#blockedUserList").append("<div class='robin-room-participant robin--user-class--user robin--presence-class--" + mutedHere + " robin--vote-class--" + userInArray[0].vote.toLowerCase() + "'></div>");
+            $("#blockedUserList>.robin-room-participant").last().append("<span class='robin--icon'></span>");
+            $("#blockedUserList>.robin-room-participant").last().append("<span class='robin--username' style='color:" + colorFromName(value) + "'>" + value + "</span>");
+
+        });
+    }
 
 
     // credit to wwwroth for idea (notification audio)
