@@ -226,7 +226,6 @@
 			case "stay":
 				$(".robin-chat--vote.robin--vote-class--continue:not('.robin--active')").click();
 				break;
-			case "grow":
 			default:
 				$(".robin-chat--vote.robin--vote-class--increase:not('.robin--active')").click();
 				break;
@@ -277,16 +276,26 @@
 		}
 	}
 
-	// if (GM_getValue("chatName") != name) {
-	//     GM_setValue("chatName", name);
-	//     setTimeout(function() {
-	//         var oldVal = $(".text-counter-input").val();
-	//         $(".text-counter-input").val("[Robin-Grow] I automatically voted to grow, and so can you! http://redd.it/4cwk2s !");
-	//         $("#sendBtn").click();
-	//         $(".text-counter-input").val(oldVal);
-	//
-	//     }, 10000);
-	// }
+
+	// http://stackoverflow.com/questions/1349404/generate-a-string-of-5-random-characters-in-javascript
+	function makeid() {
+		var text = "";
+		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+		for( var i=0; i < 5; i++ )
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		return text;
+	}
+
+	//setInterval(function() {
+		//if (parseInt(howLongLeft()) > 0) {
+			//var votersCount = counts.INCREASE + counts.ABANDON + counts.CONTINUE;
+
+			//$(".text-counter-input").val("Current standings [" + votersCount + "/" + users + "]: ABANDON: " + counts.ABANDON + ", STAY: " + counts.CONTINUE + ", GROW: " + counts.INCREASE + ", NO VOTE: " + counts.NOVOTE + " - " + formatNumber(howLongLeft()) + " minutes remaining - " + makeid()).submit();
+			//$("#robinSendMessage > input[type='submit']").click();
+		//}
+	//}, 60000);
 
 	// hash string so finding spam doesn't take up too much memory
 	function hashString(str) {
@@ -329,7 +338,7 @@
 		i = 0;
 
 		while (i < bytes) {
-			k1 = 
+			k1 =
 				((key.charCodeAt(i) & 0xff)) |
 				((key.charCodeAt(++i) & 0xff) << 8) |
 				((key.charCodeAt(++i) & 0xff) << 16) |
@@ -353,10 +362,10 @@
 			case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
 			case 1: k1 ^= (key.charCodeAt(i) & 0xff);
 
-				k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
-				k1 = (k1 << 15) | (k1 >>> 17);
-				k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
-				h1 ^= k1;
+			k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+			k1 = (k1 << 15) | (k1 >>> 17);
+			k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+			h1 ^= k1;
 		}
 
 		h1 ^= key.length;
@@ -388,178 +397,184 @@
 		if (settings.findAndHideSpam) {
 			// skips over ones that have been hidden during this run of the loop
 			$('.robin--user-class--user .robin-message--message:not(.addon--hide)').each(function() {
-					var $this = $(this);
+				var $this = $(this);
 
-					var hash = hashString($this.text());
-					var user = $('.robin-message--from', $this.closest('.robin-message')).text();
+				var hash = murmurhash3_32_gc($this.text());
+				var user = $('.robin-message--from', $this.closest('.robin-message')).text();
 
-					if (!(user in spamCounts)) {
-					spamCounts[user] = {};
-					}
 
-					if (hash in spamCounts[user]) {
+				spamCounts[user] = spamCounts[user] || {};
+
+				if (spamCounts[user][hash]) {
 					spamCounts[user][hash].count++;
 					spamCounts[user][hash].elements.push(this);
-					} else {
+				} else {
 					spamCounts[user][hash] = {
-count: 1,
-text: $this.text(),
-elements: [this]
-};
-}
-$this = null;
+						count: 1,
+						text: $this.text(),
+						elements: [this]
+					};
+				}
+				$this = null;
 			});
 
-$.each(spamCounts, function(user, messages) {
-		$.each(messages, function(hash, message) {
-				if (message.count >= 3) {
-				$.each(message.elements, function(index, element) {
-						//console.log("SPAM REMOVE: "+$(element).closest('.robin-message').text())
-						$(element).closest('.robin-message').addClass('addon--hide').remove();
-						});
-				} else {
-				message.count = 0;
+
+			// This should be faster than the method of $.each
+			var messages = null;
+			var message = null;
+			var element = null;
+			for (var i = 0, keys_i = Object.keys(spamCounts), li = keys_i.length; i < li; ++i) {
+				messages = spamCounts[keys_i[i]];
+				//console.log("M -> " + messages);
+				for (var j = 0, keys_j = Object.keys(messages), lj = keys_j.length; j < lj; ++j) {
+					message = messages[keys_j[j]];
+					//console.log("m -> " + message);
+
+					if (message.count >= 3) {
+						for (var k = 0, keys_k = Object.keys(message.elements), lk = keys_k.length; k < lk; ++k) {
+							element = message.elements[keys_k[k]];
+							//console.log("SPAM REMOVE: "+$(element).closest('.robin-message').text());
+							$(element).closest('.robin-message').addClass('addon--hide').remove();
+						}
+					} else {
+						message.count = 0;
+					}
+					message.elements = [];
 				}
+			}
+		}
+	}
 
-				message.elements = [];
-				});
-		});
-}
-}
+	// faster to save this in memory
+	/* Detects unicode spam - Credit to travelton
+	 * https://gist.github.com/travelton */
+	var UNICODE_SPAM_RE = /[\u0080-\uFFFF]/;
+	function isBotSpam(text) {
+		// starts with a [, has "Autovoter", or is a vote
+		var filter =
+			text.indexOf("[") === 0 ||
+			text == "voted to STAY" ||
+			text == "voted to GROW" ||
+			text == "voted to ABANDON" ||
+			text.indexOf("Autovoter") > -1 ||
+			(UNICODE_SPAM_RE.test(text));
 
-// faster to save this in memory
-/* Detects unicode spam - Credit to travelton
- * https://gist.github.com/travelton */
-var UNICODE_SPAM_RE = /[\u0080-\uFFFF]/;
-function isBotSpam(text) {
-	// starts with a [, has "Autovoter", or is a vote
-	var filter = text.indexOf("[") === 0 ||
-		text == "voted to STAY" ||
-		text == "voted to GROW" ||
-		text == "voted to ABANDON" ||
-		text.indexOf("Autovoter") > -1 ||
-		(UNICODE_SPAM_RE.test(text));
+		// if(filter)console.log("removing "+text);
+		return filter;
+	}
 
-	// if(filter)console.log("removing "+text);
-	return filter;
-}
-
-// Individual mute button /u/verox-
-var mutedList = [];
-$('body').on('click', ".robin--username", function() {
+	// Individual mute button /u/verox-
+	var mutedList = [];
+	$('body').on('click', ".robin--username", function() {
 		var username = $(this).text();
 		var clickedUser = mutedList.indexOf(username);
 
 		if (clickedUser == -1) {
-		// Mute our user.
-		mutedList.push(username);
-		this.style.textDecoration = "line-through";
+			// Mute our user.
+			mutedList.push(username);
+			this.style.textDecoration = "line-through";
 		} else {
-		// Unmute our user.
-		this.style.textDecoration = "none";
-		mutedList.splice(clickedUser, 1);
+			// Unmute our user.
+			this.style.textDecoration = "none";
+			mutedList.splice(clickedUser, 1);
 		}
-		});
+	});
 
 
-// credit to wwwroth for idea (notification audio)
-// i think this method is better
-var notifAudio = new Audio("https://slack.global.ssl.fastly.net/dfc0/sounds/push/knock_brush.mp3");
+	// credit to wwwroth for idea (notification audio)
+	// i think this method is better
+	var notifAudio = new Audio("https://slack.global.ssl.fastly.net/dfc0/sounds/push/knock_brush.mp3");
 
-var myObserver = new MutationObserver(mutationHandler);
-//--- Add a target node to the observer. Can only add one node at a time.
-// XXX Shou: we should only need to watch childList, more can slow it down.
-$("#robinChatMessageList").each(function() {
+	var myObserver = new MutationObserver(mutationHandler);
+	//--- Add a target node to the observer. Can only add one node at a time.
+	// XXX Shou: we should only need to watch childList, more can slow it down.
+	$("#robinChatMessageList").each(function() {
 		myObserver.observe(this, { childList: true });
-		});
-function mutationHandler(mutationRecords) {
-	mutationRecords.forEach(function(mutation) {
+	});
+	function mutationHandler(mutationRecords) {
+		mutationRecords.forEach(function(mutation) {
 			var jq = $(mutation.addedNodes);
 			// There are nodes added
 			if (jq.length > 0) {
-			// cool we have a message.
-			var thisUser = $(jq[0].children && jq[0].children[1]).text();
-			var $message = $(jq[0].children && jq[0].children[2]);
-			var messageText = $message.text();
+				// cool we have a message.
+				var thisUser = $(jq[0].children && jq[0].children[1]).text();
+				var $message = $(jq[0].children && jq[0].children[2]);
+				var messageText = $message.text();
 
-			var remove_message =
-			(mutedList.indexOf(thisUser) >= 0) ||
-			(settings.removeSpam && isBotSpam(messageText)) ||
-			(settings.filterChannel &&
-			 !jq.hasClass('robin--user-class--system') &&
-			 String(settings.channel).length > 0 &&
-			 !hasChannel(messageText, settings.channel));
+				var remove_message =
+					(mutedList.indexOf(thisUser) >= 0) ||
+					(settings.removeSpam && isBotSpam(messageText)) ||
+					(settings.filterChannel &&
+					!jq.hasClass('robin--user-class--system') &&
+					String(settings.channel).length > 0 &&
+					!hasChannel(messageText, settings.channel));
 
+				var nextIsRepeat = jq.hasClass('robin--user-class--system') && messageText.indexOf("try again") >= 0;
+				if(nextIsRepeat)
+					$(".text-counter-input").val(jq.next().find(".robin-message--message").text());
 
-			if(nextIsRepeat && jq.hasClass('robin--user-class--system')) {
-			}
-			var nextIsRepeat = jq.hasClass('robin--user-class--system') && messageText.indexOf("try again") >= 0;
-			if(nextIsRepeat) {
-				$(".text-counter-input").val(jq.next().find(".robin-message--message").text());
-			}
-
-			remove_message = remove_message && !jq.hasClass("robin--user-class--system");
-			if (remove_message) {
-				$message = null;
-				$(jq[0]).remove();
-			} else {
-				if(settings.filterChannel) {
-					if(messageText.indexOf(settings.channel) == 0) {
-						$message.text(messageText.substring(settings.channel.length).trim());
+				remove_message = remove_message && !jq.hasClass("robin--user-class--system");
+				if (remove_message) {
+					$message = null;
+					$(jq[0]).remove();
+				} else {
+					if(settings.filterChannel) {
+						if(messageText.indexOf(settings.channel) == 0) {
+							$message.text(messageText.substring(settings.channel.length).trim());
+						}
 					}
+					if (messageText.toLowerCase().indexOf(currentUsersName.toLowerCase()) !== -1) {
+						$message.parent().css("background","#FFA27F").css("color","white");
+						notifAudio.play();
+						console.log("got new mention");
+					}
+					if(urlRegex.test(messageText)) {
+						urlRegex.lastIndex = 0;
+						var url = encodeURI(urlRegex.exec(messageText)[0]);
+						var parsedUrl = url.replace(/^/, "<a target=\"_blank\" href=\"").replace(/$/, "\">"+url+"</a>");
+						var oldHTML = $(jq[0]).find('.robin-message--message').html();
+						var newHTML = oldHTML.replace(url, parsedUrl);
+						$(jq[0]).find('.robin-message--message').html(newHTML);
+					}
+					findAndHideSpam();
 				}
-				if (messageText.toLowerCase().indexOf(currentUsersName.toLowerCase()) !== -1) {
-					$message.parent().css("background","#FFA27F").css("color","white");
-					notifAudio.play();
-					console.log("got new mention");
-				}
-				if(urlRegex.test(messageText)) {
-					urlRegex.lastIndex = 0;
-					var url = encodeURI(urlRegex.exec(messageText)[0]);
-					var parsedUrl = url.replace(/^/, "<a target=\"_blank\" href=\"").replace(/$/, "\">"+url+"</a>");
-					var oldHTML = $(jq[0]).find('.robin-message--message').html();
-					var newHTML = oldHTML.replace(url, parsedUrl);
-					$(jq[0]).find('.robin-message--message').html(newHTML);
-				}
-				findAndHideSpam();
 			}
-			}
-	});
-}
+		});
+	}
 
 
-setInterval(update, 10000);
-update();
+	setInterval(update, 10000);
+	update();
 
-var flairColor = [
-	'#e50000', // red
-	'#db8e00', // orange
-	'#ccc100', // yellow
-	'#02be01', // green
-	'#0083c7', // blue
-	'#820080'  // purple
-];
+	var flairColor = [
+		'#e50000', // red
+		'#db8e00', // orange
+		'#ccc100', // yellow
+		'#02be01', // green
+		'#0083c7', // blue
+		'#820080'  // purple
+	];
 
-function colorFromName(name) {
-	sanitizedName = name.toLowerCase().replace(/[^a-z0-9]/g, "");
-	flairNum = parseInt(sanitizedName, 36) % 6;
-	return flairColor[flairNum];
-}
+	function colorFromName(name) {
+		sanitizedName = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+		flairNum = parseInt(sanitizedName, 36) % 6;
+		return flairColor[flairNum];
+	}
 
-// Color names in user list, unless they've already been colored
-function colorUserListNames() {
-	$('#robinUserList').find('.robin--username:not([style])').each(function(){
-			this.style.color = colorFromName(this.textContent);
-			});
-}
-setInterval(colorUserListNames, 11000);
-colorUserListNames();
+	// Color names in user list, unless they've already been colored
+	//function colorUserListNames() {
+		//$('#robinUserList').find('.robin--username:not([style])').each(function(){
+			//this.style.color = colorFromName(this.textContent);
+		//});
+	//}
+	//setInterval(colorUserListNames, 11000);
+	//colorUserListNames();
 
-// Color current user's name in chat and darken post backgrounds
-var currentUserColor = colorFromName(currentUsersName);
-$('<style>.robin--user-class--self { background: #F5F5F5; font-weight: bold; } .robin--user-class--self .robin--username { color: ' + currentUserColor + ' !important; font-weight: bold;}</style>').appendTo('body');
+	// Color current user's name in chat and darken post backgrounds
+	var currentUserColor = colorFromName(currentUsersName);
+	$('<style>.robin--user-class--self { background: #F5F5F5; font-weight: bold; } .robin--user-class--self .robin--username { color: ' + currentUserColor + ' !important; font-weight: bold;}</style>').appendTo('body');
 
-// Send message button
-$("#robinSendMessage").append('<div onclick={$(".text-counter-input").submit();} class="robin-chat--vote" style="font-weight: bold; padding: 5px;cursor: pointer; margin-left:0;" id="sendBtn">Send Message</div>'); // Send message
-$('#robinChatInput').css('background', '#EFEFED');
+	// Send message button
+	$("#robinSendMessage").append('<div onclick={$(".text-counter-input").submit();} class="robin-chat--vote" style="font-weight: bold; padding: 5px;cursor: pointer; margin-left:0;" id="sendBtn">Send Message</div>'); // Send message
+	$('#robinChatInput').css('background', '#EFEFED');
 })();
