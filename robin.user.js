@@ -507,7 +507,7 @@
     var notifAudio = new Audio("https://slack.global.ssl.fastly.net/dfc0/sounds/push/knock_brush.mp3");
 
     var myObserver = new MutationObserver(mutationHandler);
-    myObserver.observe(document.querySelector("#robinChatMessageList"), { childList: true});
+    myObserver.observe(document.getElementById("robinChatMessageList"), { childList: true});
 
     function mutationHandler(mutationRecords) {
         mutationRecords.forEach(function(mutation) {
@@ -579,26 +579,6 @@
         return flairColor[flairNum];
     }
 
-    // Initial pass to color names in user list
-    $('#robinUserList').find('.robin--username').each(function(){
-        this.style.color = colorFromName(this.textContent);
-    });
-
-    // When a user's status changes, they are removed from the user list and re-added with new status classes,
-    // so here we watch for names being added to the user list to re-color
-    var myUserListObserver = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length > 0) {
-                var usernameSpan = mutation.addedNodes[0].children[1];
-                usernameSpan.style.color = colorFromName(usernameSpan.innerHTML);
-            }
-        });
-    });
-    myUserListObserver.observe(document.getElementById("robinUserList"), { childList: true });
-
-    // Color current user's name in chat and darken post backgrounds
-    var currentUserColor = colorFromName(currentUsersName);
-    $('<style>.robin--user-class--self { background: #F5F5F5; font-weight: bold; } .robin--user-class--self .robin--username { color: ' + currentUserColor + ' !important; font-weight: bold;}</style>').appendTo('body');
 
     // Send message button
     $("#robinSendMessage").append('<div onclick={$(".text-counter-input").submit();} class="robin-chat--vote" style="font-weight: bold; padding: 5px;cursor: pointer; margin-left:0;" id="sendBtn">Send Message</div>'); // Send message
