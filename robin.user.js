@@ -1,4 +1,4 @@
-// ===UserScript===
+// ==UserScript==
 // @name         Robin Grow
 // @namespace    http://tampermonkey.net/
 // @version      1.840
@@ -10,7 +10,7 @@
 // @grant   GM_getValue
 // @grant   GM_setValue
 // @grant   GM_addStyle
-// ===/UserScript===
+// ==/UserScript==
 (function() {
 	// Styles
 	GM_addStyle('.robin--username {cursor: pointer}');
@@ -132,8 +132,6 @@
 		}
 	};
 
-
-	var test;
 	var currentUsersName = $('div#header span.user a').html();
 
 	// Settings
