@@ -43,7 +43,6 @@
 		}
 	}
 
-
 	var Settings = {
 		setupUI: function() {
 			$robinVoteWidget.prepend("<div class='addon'><div class='usercount robin-chat--vote' style='font-weight:bold;pointer-events:none;'></div></div>");
@@ -183,13 +182,11 @@
 		var text = $(".text-counter-input").val();
 		var code = e.keyCode || e.which;
 		if(code == 13) {
-			if(settings.filterChannel &&
-			   String(settings.channel).length > 0) {
-
-				   setTimeout(function() {
-					   $(".text-counter-input").val(settings.channel+" ");
-				   }, 10);
-			   }
+			if(settings.filterChannel && String(settings.channel).length > 0) {
+				setTimeout(function() {
+					$(".text-counter-input").val(settings.channel + " ");
+				}, 10);
+			}
 		}
 	});
 
@@ -315,7 +312,7 @@
 	}
 
 
-	/**
+	/*
 	 * JS Implementation of MurmurHash3 (r136) (as of May 20, 2011)
 	 *
 	 * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
