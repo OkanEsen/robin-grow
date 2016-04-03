@@ -507,11 +507,8 @@
     var notifAudio = new Audio("https://slack.global.ssl.fastly.net/dfc0/sounds/push/knock_brush.mp3");
 
     var myObserver = new MutationObserver(mutationHandler);
-    //--- Add a target node to the observer. Can only add one node at a time.
-    // XXX Shou: we should only need to watch childList, more can slow it down.
-    $("#robinChatMessageList").each(function() {
-        myObserver.observe(this, { childList: true });
-    });
+    myObserver.observe(document.querySelector("#robinChatMessageList"), { childList: true});
+
     function mutationHandler(mutationRecords) {
         mutationRecords.forEach(function(mutation) {
             var jq = $(mutation.addedNodes);
