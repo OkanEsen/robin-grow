@@ -1,4 +1,4 @@
-// ==UserScript==
+// ===UserScript===
 // @name         Robin Grow
 // @namespace    http://tampermonkey.net/
 // @version      1.840
@@ -10,7 +10,7 @@
 // @grant   GM_getValue
 // @grant   GM_setValue
 // @grant   GM_addStyle
-// ==/UserScript==
+// ===/UserScript===
 (function() {
 	// Styles
 	GM_addStyle('.robin--username {cursor: pointer}');
@@ -133,6 +133,7 @@
 	};
 
 
+	var test;
 	var currentUsersName = $('div#header span.user a').html();
 
 	// Settings
@@ -172,16 +173,15 @@
 
 	var list = {};
 	$(".text-counter-input").val(settings.filterChannel? settings.channel+" " :"");
-	$(".text-counter-input").keyup(function(e) {
+	$(".text-counter-input").keyup(function() {
 		if(settings.filterChannel && $(".text-counter-input").val().indexOf(settings.channel) !== 0) {
 			$(".text-counter-input").val(settings.channel+" "+$(".text-counter-input").val());
 		}
 	});
 
 	$(".text-counter-input").keydown(function(e) {
-		var text = $(".text-counter-input").val();
 		var code = e.keyCode || e.which;
-		if(code == 13) {
+		if(code === 13) {
 			if(settings.filterChannel && String(settings.channel).length > 0) {
 				setTimeout(function() {
 					$(".text-counter-input").val(settings.channel + " ");
@@ -325,7 +325,7 @@
 	 * @return {number} 32-bit positive integer hash
 	 */
 	function murmurhash3_32_gc(key, seed) {
-		var remainder, bytes, h1, h1b, c1, c1b, c2, c2b, k1, i;
+		var remainder, bytes, h1, h1b, c1, c2, k1, i;
 
 		remainder = key.length & 3; // key.length % 4
 		bytes = key.length - remainder;
@@ -450,9 +450,9 @@
 		// starts with a [, has "Autovoter", or is a vote
 		var filter =
 			text.indexOf("[") === 0 ||
-			text == "voted to STAY" ||
-			text == "voted to GROW" ||
-			text == "voted to ABANDON" ||
+			text === "voted to STAY" ||
+			text === "voted to GROW" ||
+			text === "voted to ABANDON" ||
 			text.indexOf("Autovoter") > -1 ||
 			(UNICODE_SPAM_RE.test(text));
 
@@ -466,7 +466,7 @@
 		var username = $(this).text();
 		var clickedUser = mutedList.indexOf(username);
 
-		if (clickedUser == -1) {
+		if (clickedUser === -1) {
 			// Mute our user.
 			mutedList.push(username);
 			this.style.textDecoration = "line-through";
