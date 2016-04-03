@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Robin Grow
 // @namespace    http://tampermonkey.net/
-// @version      1.840
+// @version      1.850
 // @description  Try to take over the world!
 // @author       /u/mvartan
 // @include      https://www.reddit.com/robin*
@@ -54,8 +54,8 @@
                 '<div class="robin-chat--sidebar" style="display:none;" id="settingContainer">' +
                     '<div class="robin-chat--sidebar-widget robin-chat--vote-widget" id="settingContent">' +
                         '<div class="robin-chat--vote" style="font-weight: bold; padding: 5px;cursor: pointer;" id="closeBtn">Close Settings</div>' +
-                            '</div>' +
-                                '</div>'
+                    '</div>' +
+                '</div>'
             );
 
             $("#robinDesktopNotifier").detach().appendTo("#settingContent");
@@ -215,17 +215,17 @@
 
     function update() {
         switch(settings.vote) {
-                case "abandon":
-                        $(".robin-chat--vote.robin--vote-class--abandon:not('.robin--active')").click();
-                        break;
-                case "stay":
-                        $(".robin-chat--vote.robin--vote-class--continue:not('.robin--active')").click();
-                        break;
-                default:
-                        $(".robin-chat--vote.robin--vote-class--increase:not('.robin--active')").click();
-                        break;
+            case "abandon":
+                $(".robin-chat--vote.robin--vote-class--abandon:not('.robin--active')").click();
+                break;
+            case "stay":
+                $(".robin-chat--vote.robin--vote-class--continue:not('.robin--active')").click();
+                break;
+            default:
+                $(".robin-chat--vote.robin--vote-class--increase:not('.robin--active')").click();
+                break;
         }
-        if (endTime === null) {
+        if (endTime === null && !isEndingSoon) {
             $(".timeleft").hide();
         }
         else {
@@ -335,32 +335,32 @@
         while (i < bytes) {
             k1 =
                 ((key.charCodeAt(i) & 0xff)) |
-                    ((key.charCodeAt(++i) & 0xff) << 8) |
-                        ((key.charCodeAt(++i) & 0xff) << 16) |
-                            ((key.charCodeAt(++i) & 0xff) << 24);
-                            ++i;
+                ((key.charCodeAt(++i) & 0xff) << 8) |
+                ((key.charCodeAt(++i) & 0xff) << 16) |
+                ((key.charCodeAt(++i) & 0xff) << 24);
+            ++i;
 
-                            k1 = ((((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16))) & 0xffffffff;
-                            k1 = (k1 << 15) | (k1 >>> 17);
-                            k1 = ((((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16))) & 0xffffffff;
+            k1 = ((((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16))) & 0xffffffff;
+            k1 = (k1 << 15) | (k1 >>> 17);
+            k1 = ((((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16))) & 0xffffffff;
 
-                            h1 ^= k1;
-                            h1 = (h1 << 13) | (h1 >>> 19);
-                            h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
-                            h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
+            h1 ^= k1;
+            h1 = (h1 << 13) | (h1 >>> 19);
+            h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
+            h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
         }
 
         k1 = 0;
 
         switch (remainder) {
-                case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
-                case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
-                case 1: k1 ^= (key.charCodeAt(i) & 0xff);
+            case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+            case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+            case 1: k1 ^= (key.charCodeAt(i) & 0xff);
 
-                        k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
-                        k1 = (k1 << 15) | (k1 >>> 17);
-                        k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
-                        h1 ^= k1;
+                k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+                k1 = (k1 << 15) | (k1 >>> 17);
+                k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+                h1 ^= k1;
         }
 
         h1 ^= key.length;
@@ -448,14 +448,14 @@
         // starts with a [, has "Autovoter", or is a vote
         var filter =
             text.indexOf("[") === 0 ||
-                text === "voted to STAY" ||
-                    text === "voted to GROW" ||
-                        text === "voted to ABANDON" ||
-                            text.indexOf("Autovoter") > -1 ||
-                                (UNICODE_SPAM_RE.test(text));
+            text === "voted to STAY" ||
+            text === "voted to GROW" ||
+            text === "voted to ABANDON" ||
+            text.indexOf("Autovoter") > -1 ||
+            (UNICODE_SPAM_RE.test(text));
 
-                                // if(filter)console.log("removing "+text);
-                                return filter;
+            // if(filter)console.log("removing "+text);
+            return filter;
     }
 
     // Individual mute button /u/verox-
@@ -498,41 +498,41 @@
 
                 var remove_message =
                     (mutedList.indexOf(thisUser) >= 0) ||
-                        (settings.removeSpam && isBotSpam(messageText)) ||
-                            (settings.filterChannel &&
-                             !jq.hasClass('robin--user-class--system') &&
-                                 String(settings.channel).length > 0 &&
-                                     !hasChannel(messageText, settings.channel));
+                    (settings.removeSpam && isBotSpam(messageText)) ||
+                    (settings.filterChannel &&
+                    !jq.hasClass('robin--user-class--system') &&
+                    String(settings.channel).length > 0 &&
+                    !hasChannel(messageText, settings.channel));
 
-                                     var nextIsRepeat = jq.hasClass('robin--user-class--system') && messageText.indexOf("try again") >= 0;
-                                     if(nextIsRepeat)
-                                         $(".text-counter-input").val(jq.next().find(".robin-message--message").text());
+                var nextIsRepeat = jq.hasClass('robin--user-class--system') && messageText.indexOf("try again") >= 0;
+                if(nextIsRepeat)
+                    $(".text-counter-input").val(jq.next().find(".robin-message--message").text());
 
-                                     remove_message = remove_message && !jq.hasClass("robin--user-class--system");
-                                     if (remove_message) {
-                                         $message = null;
-                                         $(jq[0]).remove();
-                                     } else {
-                                         if(settings.filterChannel) {
-                                             if(messageText.indexOf(settings.channel) === 0) {
-                                                 $message.text(messageText.substring(settings.channel.length).trim());
-                                             }
-                                         }
-                                         if (messageText.toLowerCase().indexOf(currentUsersName.toLowerCase()) !== -1) {
-                                             $message.parent().css("background","#FFA27F").css("color","white");
-                                             notifAudio.play();
-                                             console.log("got new mention");
-                                         }
-                                         if(urlRegex.test(messageText)) {
-                                             urlRegex.lastIndex = 0;
-                                             var url = encodeURI(urlRegex.exec(messageText)[0]);
-                                             var parsedUrl = url.replace(/^/, "<a target=\"_blank\" href=\"").replace(/$/, "\">"+url+"</a>");
-                                             var oldHTML = $(jq[0]).find('.robin-message--message').html();
-                                             var newHTML = oldHTML.replace(url, parsedUrl);
-                                             $(jq[0]).find('.robin-message--message').html(newHTML);
-                                         }
-                                         findAndHideSpam();
-                                     }
+                remove_message = remove_message && !jq.hasClass("robin--user-class--system");
+                if (remove_message) {
+                    $message = null;
+                    $(jq[0]).remove();
+                } else {
+                    if(settings.filterChannel) {
+                        if(messageText.indexOf(settings.channel) === 0) {
+                            $message.text(messageText.substring(settings.channel.length).trim());
+                        }
+                    }
+                    if (messageText.toLowerCase().indexOf(currentUsersName.toLowerCase()) !== -1) {
+                        $message.parent().css("background","#FFA27F").css("color","white");
+                        notifAudio.play();
+                        console.log("got new mention");
+                    }
+                    if(urlRegex.test(messageText)) {
+                        urlRegex.lastIndex = 0;
+                        var url = encodeURI(urlRegex.exec(messageText)[0]);
+                        var parsedUrl = url.replace(/^/, "<a target=\"_blank\" href=\"").replace(/$/, "\">"+url+"</a>");
+                        var oldHTML = $(jq[0]).find('.robin-message--message').html();
+                        var newHTML = oldHTML.replace(url, parsedUrl);
+                        $(jq[0]).find('.robin-message--message').html(newHTML);
+                    }
+                    findAndHideSpam();
+                }
             }
         });
     }
@@ -556,14 +556,22 @@
         return flairColor[flairNum];
     }
 
-    // Color names in user list, unless they've already been colored
-    //function colorUserListNames() {
-    //$('#robinUserList').find('.robin--username:not([style])').each(function(){
-    //this.style.color = colorFromName(this.textContent);
-    //});
-    //}
-    //setInterval(colorUserListNames, 11000);
-    //colorUserListNames();
+    // Initial pass to color names in user list
+    $('#robinUserList').find('.robin--username').each(function(){
+        this.style.color = colorFromName(this.textContent);
+    });
+
+    // When a user's status changes, they are removed from the user list and re-added with new status classes,
+    // so here we watch for names being added to the user list to re-color
+    var myUserListObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length > 0) {
+                var usernameSpan = mutation.addedNodes[0].children[1];
+                usernameSpan.style.color = colorFromName(usernameSpan.innerHTML);
+            }
+        });
+    });
+    myUserListObserver.observe(document.getElementById("robinUserList"), { childList: true });
 
     // Color current user's name in chat and darken post backgrounds
     var currentUserColor = colorFromName(currentUsersName);
@@ -572,4 +580,9 @@
     // Send message button
     $("#robinSendMessage").append('<div onclick={$(".text-counter-input").submit();} class="robin-chat--vote" style="font-weight: bold; padding: 5px;cursor: pointer; margin-left:0;" id="sendBtn">Send Message</div>'); // Send message
     $('#robinChatInput').css('background', '#EFEFED');
+
+    // RES Night Mode support
+    if ($("body").hasClass("res")) {
+        $('<style>.res-nightmode .robin-message, .res-nightmode .robin--user-class--self .robin--username, .res-nightmode .robin-room-participant .robin--username, .res-nightmode :not([class*=flair]) > .robin--username, .res-nightmode .robin-chat .robin-chat--vote, .res-nightmode .robin-message[style="color: white; background: rgb(255, 162, 127);"] { color: #DDD; } .res-nightmode .robin-chat .robin-chat--sidebar, .res-nightmode .robin-chat .robin-chat--vote { background-color: #262626; } .res-nightmode #robinChatInput { background-color: #262626 !important; } .res-nightmode .robin-chat .robin-chat--vote { box-shadow: 0px 0px 2px 1px #888; } .res-nightmode .robin-chat .robin-chat--vote.robin--active { background-color: #444444; box-shadow: 1px 1px 5px 1px black inset; } .res-nightmode .robin-chat .robin-chat--vote:focus { background-color: #848484; outline: 1px solid #9A9A9A; } .res-nightmode .robin--user-class--self { background-color: #424242; } .res-nightmode .robin-message[style="color: white; background: rgb(255, 162, 127);"] { background-color: #520000 !important; } .res-nightmode .robin-chat .robin-chat--user-list-widget { overflow-x: hidden; } .res-nightmode .robin-chat .robin-chat--sidebar-widget { border-bottom: none; }</style>').appendTo('body');
+    }
 })();
