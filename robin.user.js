@@ -479,12 +479,13 @@
 
         $("#settingContent").append("<div id='blockedUserList' class='robin-chat--sidebar-widget robin-chat--user-list-widget'></div>");
 
-        $.each(mutedList, function(index, value){
-
+        var i;
+        var len;
+        for (i = 0, len = mutedList.length; i < len; i++) {
             var mutedHere = "present";
 
             var userInArray = $.grep(list, function(e) {
-                return e.name === value;
+                return e.name === mutedList[i];
             });
 
             if (userInArray[0].present === true) {
@@ -495,9 +496,9 @@
 
             $("#blockedUserList").append("<div class='robin-room-participant robin--user-class--user robin--presence-class--" + mutedHere + " robin--vote-class--" + userInArray[0].vote.toLowerCase() + "'></div>");
             $("#blockedUserList>.robin-room-participant").last().append("<span class='robin--icon'></span>");
-            $("#blockedUserList>.robin-room-participant").last().append("<span class='robin--username' style='color:" + colorFromName(value) + "'>" + value + "</span>");
+            $("#blockedUserList>.robin-room-participant").last().append("<span class='robin--username' style='color:" + colorFromName(mutedList[i]) + "'>" + mutedList[i] + "</span>");
 
-        });
+        }
     }
 
 
