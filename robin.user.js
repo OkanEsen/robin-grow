@@ -496,7 +496,6 @@
             // There are nodes added
             if (jq.length > 0) {
                 // prune if necessary
-                console.log(jq[0].parentNode.children.length >= settings.maxprune);
                 if (jq[0].parentNode.children.length >= settings.maxprune) pruneOldMessages(jq[0].parentNode.children);
                 // cool we have a message.
                 var thisUser = $(jq[0].children && jq[0].children[1]).text();
