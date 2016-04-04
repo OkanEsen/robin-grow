@@ -420,6 +420,19 @@
         return filter;
     }
 
+    function pruneOldMessages(messages) {
+        var maxprune = parseInt(settings.maxprune || "1000", 10);
+        if (maxprune < 10 || isNaN(maxprune)) {
+            maxprune = 1000;
+        }
+
+        if (messages.length > maxprune) {
+            var tempMessage = Array.prototype.slice.call(messages, 0, messages.length - maxprune);
+            for (var i = 0, len_t = tempMessage.length; i < len_t; ++i)
+                tempMessage[i].parentNode.removeChild(tempMessage[i]);
+        }
+    }
+
     // Individual mute button /u/verox-
     var mutedList = [];
     $('body').on('click', ".robin--username", function() {
@@ -482,6 +495,9 @@
             var jq = $(mutation.addedNodes);
             // There are nodes added
             if (jq.length > 0) {
+                // prune if necessary
+                console.log(jq[0].parentNode.children.length >= settings.maxprune);
+                if (jq[0].parentNode.children.length >= settings.maxprune) pruneOldMessages(jq[0].parentNode.children);
                 // cool we have a message.
                 var thisUser = $(jq[0].children && jq[0].children[1]).text();
                 var $message = $(jq[0].children && jq[0].children[2]);
